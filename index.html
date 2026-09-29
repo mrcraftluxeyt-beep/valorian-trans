@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Велориан — Переводчик</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    color: #e0e0e0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .container {
+    max-width: 900px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 2.2em;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, #00d4ff, #7b2ff7, #ff2e88);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #888;
+    margin-bottom: 25px;
+    font-size: 0.95em;
+    letter-spacing: 1px;
+  }
+
+  .lang-switch {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .lang-switch button {
+    padding: 10px 25px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    background: rgba(0, 212, 255, 0.1);
+    color: #00d4ff;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s;
+  }
+
+  .lang-switch button.active {
+    background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 5px 20px rgba(123, 47, 247, 0.4);
+  }
+
+  .lang-switch button:hover:not(.active) {
+    background: rgba(0, 212, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 700px) {
+    .panels {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel label {
+    font-size: 0.85em;
+    color: #7b2ff7;
+    margin-bottom: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 180px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #e0e0e0;
+    font-size: 1.05em;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.3s;
+    line-height: 1.5;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: #00d4ff;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+  }
+
+  textarea::placeholder {
+    color: #555;
+  }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin-top: 10px;
+    background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(123, 47, 247, 0.4);
+  }
+
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  .btn-clear {
+    background: rgba(255, 46, 136, 0.2);
+    border: 1px solid rgba(255, 46, 136, 0.5);
+    color: #ff2e88;
+    margin-top: 8px;
+  }
+
+  .btn-clear:hover {
+    background: rgba(255, 46, 136, 0.3);
+    box-shadow: 0 10px 30px rgba(255, 46, 136, 0.3);
+  }
+
+  .dictionary {
+    margin-top: 25px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .dictionary h3 {
+    color: #00d4ff;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+  }
+
+  .dict-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+
+  .dict-item {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+
+  .dict-item:hover {
+    background: rgba(0, 212, 255, 0.15);
+    border-color: rgba(0, 212, 255, 0.3);
+    transform: translateX(3px);
+  }
+
+  .dict-item .ru {
+    color: #ff2e88;
+    font-weight: 600;
+  }
+
+  .dict-item .vel {
+    color: #00d4ff;
+  }
+
+  .dict-grid::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .dict-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+  }
+
+  .dict-grid::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+    border-radius: 10px;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #555;
+    font-size: 0.85em;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🌀 Велориан</h1>
+  <p class="subtitle">Переводчик Русский ↔ Велориан</p>
+
+  <div class="lang-switch">
+    <button id="btnRuVel" class="active" onclick="setDirection('ru-vel')">RU → VEL</button>
+    <button id="btnVelRu" onclick="setDirection('vel-ru')">VEL → RU</button>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <label id="labelInput">Введите текст на русском</label>
+      <textarea id="inputText" placeholder="Привет, друг! Я люблю тебя."></textarea>
+    </div>
+    <div class="panel">
+      <label id="labelOutput">Перевод на велориан</label>
+      <textarea id="outputText" readonly placeholder="Вела, амика! Ми амора ти."></textarea>
+    </div>
+  </div>
+
+  <button class="btn" onclick="translate()">🔄 Перевести</button>
+  <button class="btn btn-clear" onclick="clearAll()">🗑 Очистить</button>
+
+  <div class="dictionary">
+    <h3>📖 Быстрый словарь (нажмите на слово)</h3>
+    <div class="dict-grid" id="dictGrid"></div>
+  </div>
+
+  <p class="footer">Велориан v1.0 — искусственный язык • SVO • 5 падежей</p>
+</div>
+
+<script>
+// ==================== СЛОВАРЬ ====================
+const dict = {
+  // Приветствия
+  "привет": "вела",
+  "пока": "вело",
+  "здравствуй": "вела",
+  "прощай": "вело",
+  "спасибо": "данка",
+  "пожалуйста": "мола",
+  "да": "ят",
+  "нет": "нот",
+  "извини": "пардон",
+
+  // Существительные
+  "человек": "дома",
+  "люди": "домас",
+  "вода": "аква",
+  "огонь": "пиро",
+  "земля": "терра",
+  "небо": "небо",
+  "солнце": "соли",
+  "луна": "луна",
+  "звезда": "стелла",
+  "любовь": "амора",
+  "друг": "амика",
+  "время": "темпо",
+  "жизнь": "вита",
+  "смерть": "морто",
+  "дом": "касса",
+  "сердце": "корда",
+  "душа": "анима",
+  "мир": "мундо",
+  "слово": "вербо",
+  "язык": "линга",
+  "книга": "либра",
+  "город": "урбо",
+  "страна": "стан",
+  "дерево": "арбо",
+  "цветок": "флор",
+  "река": "рива",
+  "море": "маре",
+  "гора": "монте",
+  "дорога": "виа",
+  "ночь": "нокте",
+  "день": "диа",
+  "утро": "мано",
+  "вечер": "веспер",
+
+  // Местоимения
+  "я": "ми",
+  "ты": "ти",
+  "он": "си",
+  "она": "си",
+  "мы": "нис",
+  "вы": "вис",
+  "они": "лис",
+  "мой": "миа",
+  "твой": "тиа",
+  "наш": "ниса",
+
+  // Глаголы
+  "любить": "амора",
+  "люблю": "амора",
+  "жить": "вита",
+  "живу": "вита",
+  "идти": "ире",
+  "видеть": "видо",
+  "знать": "сапо",
+  "хотеть": "воло",
+  "дать": "дара",
+  "иметь": "тено",
+  "быть": "эсо",
+  "есть": "эсо",
+  "говорить": "дико",
+  "думать": "пенсо",
+  "делать": "дела",
+  "работать": "лабо",
+  "читать": "легго",
+  "писать": "скрибо",
+  "пить": "бибо",
+  "есть (кушать)": "мандо",
+  "спать": "дормо",
+
+  // Прилагательные
+  "большой": "грандик",
+  "маленький": "парвик",
+  "хороший": "боник",
+  "плохой": "малик",
+  "красивый": "бельик",
+  "новый": "новик",
+  "старый": "ветик",
+  "сильный": "фортик",
+  "слабый": "дебик",
+  "светлый": "лумик",
+  "тёмный": "тенебрик",
+  "добрый": "беник",
+  "злой": "малигник",
+  "умный": "сапик",
+  "глупый": "стулик",
+  "быстрый": "велик",
+  "медленный": "лентик",
+  "горячий": "калик",
+  "холодный": "фригик",
+
+  // Наречия
+  "быстро": "велэм",
+  "медленно": "лентэм",
+  "хорошо": "бонэм",
+  "плохо": "малэм",
+  "здесь": "хик",
+  "там": "лик",
+  "сейчас": "нунк",
+  "потом": "постэм",
+  "всегда": "темро",
+  "никогда": "нункам",
+  "очень": "мультэм",
+
+  // Числа
+  "ноль": "ноль",
+  "один": "ун",
+  "два": "ду",
+  "три": "три",
+  "четыре": "квад",
+  "пять": "пен",
+  "шесть": "секс",
+  "семь": "септ",
+  "восемь": "окт",
+  "девять": "нов",
+  "десять": "дек",
+
+  // Союзы и предлоги
+  "и": "э",
+  "или": "о",
+  "но": "ба",
+  "если": "се",
+  "потому что": "кауз",
+  "в": "ин",
+  "на": "супер",
+  "с": "кум",
+  "без": "син",
+  "для": "про",
+  "от": "аб",
+
+  // Вопросительные
+  "кто": "ки",
+  "что": "ко",
+  "где": "ку",
+  "когда": "кван",
+  "почему": "кур",
+  "как": "квомодо",
+};
+
+// ==================== ГРАММАТИКА ====================
+
+// Обратный словарь
+const reverseDict = {};
+for (const [ru, vel] of Object.entries(dict)) {
+  if (!reverseDict[vel]) reverseDict[vel] = ru;
+}
+
+// Проверка: гласная ли буква
+function isVowel(ch) {
+  return "aeiouyAEIOUY".includes(ch);
+}
+
+// Применение правил грамматики к русскому предложению
+function ruToVelGrammar(text) {
+  // Разбиваем на предложения
+  const sentences = text.split(/([.!?]+)/);
+  let result = "";
+
+  for (let i = 0; i < sentences.length; i++) {
+    let sentence = sentences[i];
+    if (/^[.!?]+$/.test(sentence)) {
+      result += sentence;
+      continue;
+    }
+
+    // Токенизация: слова и знаки препинания
+    const tokens = sentence.match(/[\wа-яёА-ЯЁ]+|[^\s\w]/g) || [];
+    let translated = [];
+    let isQuestion = false;
+
+    for (let token of tokens) {
+      const lower = token.toLowerCase();
+
+      // Проверка на вопросительное слово → это вопрос
+      if (["кто", "что", "где", "когда", "почему", "как"].includes(lower)) {
+        isQuestion = true;
+      }
+
+      // Перевод слова
+      if (dict[lower]) {
+        translated.push(dict[lower]);
+      } else {
+        // Если слово не найдено — пытаемся перевести по частям
+        translated.push(translateWordByParts(lower));
+      }
+    }
+
+    // Собираем предложение
+    let sentenceResult = translated.join(" ");
+
+    // Правило: вопросительное слово в начало, если это вопрос
+    if (isQuestion) {
+      // Уже в начале, если было в начале
+    }
+
+    // Правило эвфонии: вставляем -н- между одинаковыми гласными
+    sentenceResult = applyEuphony(sentenceResult);
+
+    // Заглавная буква в начале предложения
+    if (sentenceResult.length > 0) {
+      sentenceResult = sentenceResult.charAt(0).toUpperCase() + sentenceResult.slice(1);
+    }
+
+    result += sentenceResult;
+  }
+
+  return result;
+}
+
+// Перевод слова по частям (если нет в словаре)
+function translateWordByParts(word) {
+  // Попробуем найти корень
+  for (const [ru, vel] of Object.entries(dict)) {
+    if (ru.length >= 3 && word.startsWith(ru.slice(0, -1))) {
+      return vel;
+    }
+  }
+  // Если не нашли — транслитерация
+  return transliterate(word);
+}
+
+// Транслитерация русских букв в велорианские
+function transliterate(word) {
+  const map = {
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e',
+    'ё': 'e', 'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k',
+    'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r',
+    'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'c',
+    'ч': 'ch', 'ш': 'sh', 'щ': 'sh', 'ъ': '', 'ы': 'y', 'ь': '',
+    'э': 'e', 'ю': 'yu', 'я': 'ya'
+  };
+  return word.split('').map(ch => map[ch] || ch).join('');
+}
+
+// Правило эвфонии: между двумя одинаковыми гласными вставляем -н-
+function applyEuphony(text) {
+  const words = text.split(" ");
+  for (let i = 0; i < words.length - 1; i++) {
+    const last = words[i].slice(-1);
+    const first = words[i + 1].charAt(0);
+    if (isVowel(last) && isVowel(first) && last.toLowerCase() === first.toLowerCase()) {
+      words[i] = words[i] + "н";
+    }
+  }
+  return words.join(" ");
+}
+
+// Обратный перевод: велориан → русский
+function velToRu(text) {
+  const sentences = text.split(/([.!?]+)/);
+  let result = "";
+
+  for (let i = 0; i < sentences.length; i++) {
+    let sentence = sentences[i];
+    if (/^[.!?]+$/.test(sentence)) {
+      result += sentence;
+      continue;
+    }
+
+    const tokens = sentence.match(/[\w]+|[^\s\w]/g) || [];
+    let translated = [];
+
+    for (let token of tokens) {
+      const lower = token.toLowerCase();
+
+      if (reverseDict[lower]) {
+        translated.push(reverseDict[lower]);
+      } else {
+        // Обратная транслитерация
+        translated.push(reverseTransliterate(lower));
+      }
+    }
+
+    let sentenceResult = translated.join(" ");
+
+    // Заглавная буква
+    if (sentenceResult.length > 0) {
+      sentenceResult = sentenceResult.charAt(0).toUpperCase() + sentenceResult.slice(1);
+    }
+
+    result += sentenceResult;
+  }
+
+  return result;
+}
+
+// Обратная транслитерация
+function reverseTransliterate(word) {
+  const map = {
+    'sh': 'ш', 'ch': 'ч', 'zh': 'ж', 'ya': 'я', 'yu': 'ю',
+    'a': 'а', 'b': 'б', 'v': 'в', 'g': 'г', 'd': 'д', 'e': 'е',
+    'z': 'з', 'i': 'и', 'y': 'й', 'k': 'к', 'l': 'л', 'm': 'м',
+    'n': 'н', 'o': 'о', 'p': 'п', 'r': 'р', 's': 'с', 't': 'т',
+    'u': 'у', 'f': 'ф', 'h': 'х', 'c': 'ц'
+  };
+
+  let result = "";
+  let i = 0;
+  while (i < word.length) {
+    // Проверяем двухбуквенные сочетания
+    if (i + 1 < word.length && map[word.slice(i, i + 2)]) {
+      result += map[word.slice(i, i + 2)];
+      i += 2;
+    } else if (map[word[i]]) {
+      result += map[word[i]];
+      i += 1;
+    } else {
+      result += word[i];
+      i += 1;
+    }
+  }
+  return result;
+}
+
+// ==================== ИНТЕРФЕЙС ====================
+
+let direction = "ru-vel";
+
+function setDirection(dir) {
+  direction = dir;
+  document.getElementById("btnRuVel").classList.toggle("active", dir === "ru-vel");
+  document.getElementById("btnVelRu").classList.toggle("active", dir === "vel-ru");
+
+  if (dir === "ru-vel") {
+    document.getElementById("labelInput").textContent = "Введите текст на русском";
+    document.getElementById("labelOutput").textContent = "Перевод на велориан";
+    document.getElementById("inputText").placeholder = "Привет, друг! Я люблю тебя.";
+    document.getElementById("outputText").placeholder = "Вела, амика! Ми амора ти.";
+  } else {
+    document.getElementById("labelInput").textContent = "Введите текст на велориане";
+    document.getElementById("labelOutput").textContent = "Перевод на русский";
+    document.getElementById("inputText").placeholder = "Вела, амика! Ми амора ти.";
+    document.getElementById("outputText").placeholder = "Привет, друг! Я люблю тебя.";
+  }
+
+  document.getElementById("inputText").value = "";
+  document.getElementById("outputText").value = "";
+}
+
+function translate() {
+  const input = document.getElementById("inputText").value.trim();
+  if (!input) {
+    document.getElementById("outputText").value = "";
+    return;
+  }
+
+  let output;
+  if (direction === "ru-vel") {
+    output = ruToVelGrammar(input);
+  } else {
+    output = velToRu(input);
+  }
+
+  document.getElementById("outputText").value = output;
+}
+
+function clearAll() {
+  document.getElementById("inputText").value = "";
+  document.getElementById("outputText").value = "";
+}
+
+// Автоперевод при вводе
+document.getElementById("inputText").addEventListener("input", translate);
+
+// ==================== СЛОВАРЬ В ИНТЕРФЕЙСЕ ====================
+
+function buildDictGrid() {
+  const grid = document.getElementById("dictGrid");
+  const entries = Object.entries(dict).slice(0, 60);
+
+  entries.forEach(([ru, vel]) => {
+    const item = document.createElement("div");
+    item.className = "dict-item";
+    item.innerHTML = `<span class="ru">${ru}</span> → <span class="vel">${vel}</span>`;
+    item.onclick = () => {
+      document.getElementById("inputText").value = ru;
+      translate();
+    };
+    grid.appendChild(item);
+  });
+}
+
+buildDictGrid();
+</script>
+</body>
+  </html>
